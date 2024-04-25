@@ -71,7 +71,8 @@ ReadCutsite = function(segref,reftype=NULL){
 #' @return A list include two IRanges instances (deletion and insertion)
 #' @importFrom IRanges IRanges
 #' @importFrom S4Vectors mcols mcols<-
-#' @importFrom Biostrings DNAString pairwiseAlignment nucleotideSubstitutionMatrix
+#' @importFrom Biostrings DNAString
+#' @importFrom pwalign pairwiseAlignment nucleotideSubstitutionMatrix
 #' @export
 #' @examples
 #' align_to_range(p="AAGG---AAATTTCGGAATAAGGAATTT",s="AAGGCCCCAAATTT-CGGAATAAGGAATTT",cut=0)
@@ -172,7 +173,8 @@ align_to_range = function(p,s,cut){
 #'
 #' @return list include IRanges instances (deletion and insertion), a data frame of reads' informations, reference sequenc, dataframe of cut sites
 #' @export
-#' @importFrom Biostrings DNAString pairwiseAlignment nucleotideSubstitutionMatrix subseq matchPattern pattern alignedPattern alignedSubject
+#' @importFrom Biostrings DNAString subseq matchPattern pattern
+#' @importFrom pwalign pairwiseAlignment alignedPattern alignedSubject nucleotideSubstitutionMatrix
 #' @importFrom IRanges IRanges subject
 #' @importFrom parallel makeCluster clusterEvalQ parLapply stopCluster clusterExport
 #' @importFrom BiocGenerics score
@@ -183,7 +185,7 @@ align_to_range = function(p,s,cut){
 #'
 FindIndel = function(data,scarfull,scar,align_score=NULL,type=NULL,indel.coverage=NULL,cln){
   scarref<-ReadCutsite(scar,reftype=indel.coverage)
-  mat  =  Biostrings::nucleotideSubstitutionMatrix(match = 1, mismatch = -3)
+  mat  =  pwalign::nucleotideSubstitutionMatrix(match = 1, mismatch = -3)
   testFunction  =  function (data_in) {
     return(tryCatch(data_in, error=function(e) "unknown"))
   }
@@ -201,7 +203,7 @@ FindIndel = function(data,scarfull,scar,align_score=NULL,type=NULL,indel.coverag
   find_barcode<-function(data){
     #tycpe="none"
     s3<-Biostrings::DNAString(as.character(data))
-    alig<-Biostrings::pairwiseAlignment(scarfull,s3,substitutionMatrix = mat,type="global-local",gapOpening = 6, gapExtension= 1)
+    alig<-pwalign::pairwiseAlignment(scarfull,s3,substitutionMatrix = mat,type="global-local",gapOpening = 6, gapExtension= 1)
     if(any(is.null(indel.coverage),indel.coverage=="Accurate")){
       scarshort = Biostrings::subseq(as.character(scarfull[[1]]),scar["start"][1,],scar["end"][1,])
     }else{
@@ -222,8 +224,8 @@ FindIndel = function(data,scarfull,scar,align_score=NULL,type=NULL,indel.coverag
       }
       stopifnot(is(alig, "PairwiseAlignments"), length(data) == 1L)
 
-      p <- as.character(Biostrings::alignedPattern(alig)[[1L]])
-      s <- as.character(Biostrings::alignedSubject(alig)[[1L]])
+      p <- as.character(pwalign::alignedPattern(alig)[[1L]])
+      s <- as.character(pwalign::alignedSubject(alig)[[1L]])
       if(any(is.null(indel.coverage),indel.coverage=="Accurate")){
         delins = align_to_range(p,s,scar["start"][1,])
       }else{
@@ -369,7 +371,8 @@ IndelForm = function(scarinfo,cln){
 #' @return The list generate from FindIndel, but in 'Scar' element a new column contain scar form strings
 #' @export
 #' @importFrom stringdist stringdistmatrix
-#' @importFrom Biostrings consensusString pairwiseAlignment DNAString nucleotideSubstitutionMatrix alignedPattern alignedSubject
+#' @importFrom Biostrings consensusString DNAString
+#' @importFrom pwalign pairwiseAlignment alignedPattern alignedSubject nucleotideSubstitutionMatrix
 #' @importFrom IRanges IRanges
 #'
 #' @examples
@@ -448,10 +451,10 @@ IndelIdents = function(scarinfo,method.use=NULL,cln){
           umi_pro = round(umi_num/length(unique(temreads$UMI)),4)
           fin_read_cons = gsub("\\?","",fin_read)
           s1 = Biostrings::DNAString(fin_read_cons)
-          aligc = Biostrings::pairwiseAlignment(scarfull,s1,substitutionMatrix = mat,type="global-local",gapOpening = 6, gapExtension = 1)
+          aligc = pwalign::pairwiseAlignment(scarfull,s1,substitutionMatrix = mat,type="global-local",gapOpening = 6, gapExtension = 1)
           stopifnot(is(aligc, "PairwiseAlignments"), length(x) == 1L)
-          p <- as.character(Biostrings::alignedPattern(aligc)[[1L]])
-          s.cons <- as.character(Biostrings::alignedSubject(aligc)[[1L]])
+          p <- as.character(pwalign::alignedPattern(aligc)[[1L]])
+          s.cons <- as.character(pwalign::alignedSubject(aligc)[[1L]])
           if(any(is.null(indel.coverage),indel.coverage=="Accurate")){
             indel = align_to_range(p,s.cons,scar["start"][1,])
           }else{

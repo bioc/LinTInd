@@ -1,6 +1,6 @@
 Package: LinTInd
 Title: Lineage tracing by indels
-Version: 1.7.0
+Version: 1.7.1
 Authors@R: 
 	c(person(given = "Luyue",family = "Wang",role = c("aut","cre"),email = "wly1995310@gmail.com"),
 	person(given = "Bin",family = "Xiang",role = c("ctb")),
@@ -21,7 +21,7 @@ LazyData: true
 VignetteBuilder: knitr
 Suggests: knitr, rmarkdown
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.1
+RoxygenNote: 7.3.1
 biocViews: SingleCell, CRISPR, Alignment
 Depends: R (>= 4.0),
     ggplot2,
@@ -42,6 +42,7 @@ Imports:
     rlist,
     pheatmap,
     Biostrings,
+    pwalign,
     IRanges,
     BiocGenerics(>= 0.36.1),
     ggtree
